@@ -1,15 +1,22 @@
 FROM ubuntu:latest
 
-MAINTAINER Hugh Cannon <hugh@hughcannon.com>
+MAINTAINER jliljenq <jliljenq@gmail.com>
+
+ENV FACTORIO_VERSION 0.12.26
+ENV SERVER_OPTS --disallow-commands --autosave-interval 20
+ENV MAP_FILE defaultMap.zip
+
+ADD config.ini /factorio/config.ini
+ADD entrypoint.sh /factorio/entrypoint.sh
+
+WORKDIR /factorio
 
 RUN apt-get update &&\
   apt-get install -y curl && \
-  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+  curl -L -k https://www.factorio.com/get-download/$FACTORIO_VERSION/headless/linux64 | tar --strip-components=1 -xzf -
 
-WORKDIR /factorio
-RUN curl -L -k https://www.factorio.com/get-download/0.12.26/headless/linux64 | tar --strip-components=1 -xzf -
-
-VOLUME ["/factorio/saves"]
+VOLUME ["/factorio/saves", "/factorio/config"]
 
 EXPOSE 34197/udp
-ENTRYPOINT ["/factorio/bin/x64/factorio"]
+ENTRYPOINT ["bash", "entrypoint.sh"]
